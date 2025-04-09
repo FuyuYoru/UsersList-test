@@ -1,0 +1,20 @@
+.page_main-container{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+}
+
+.page_error-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.page_error-text {
+    font-size: 20pt;
+}
