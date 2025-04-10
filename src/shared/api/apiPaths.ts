@@ -6,6 +6,6 @@ export class ApiPaths {
     }
 
     public static getUserDetail(id: number) {
-        return `/users/details/${id}`;
+        return `/users/${id}`;
     }
 }

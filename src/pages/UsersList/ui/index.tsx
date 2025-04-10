@@ -1,15 +1,34 @@
-import { FC, useId } from "react";
+import { FC, useId, useState, useMemo } from "react";
 import styles from './index.module.scss';
 import { useGetUsersQuery } from "@/entities/user/api";
 import { TriangleAlert } from "lucide-react";
 import { TRowSceleton } from "@/shared/ui/TRowSceleton";
+import { UsersTable } from "@/features/UsersTable/";
+import { Input } from "@/shared/ui/Input";
 
 export const UsersList: FC = () => {
     const { data: users, isLoading, error } = useGetUsersQuery(undefined, {
         pollingInterval: 20000,
     });
 
+    const [filterValue, setFilterValue] = useState('');
     const listId = useId();
+
+    const filteredUsers = useMemo(() => {
+        if (!users) return [];
+
+        if (!filterValue) return users;
+
+        const lowercasedValue = filterValue.toLowerCase();
+        return users.filter(user => {
+            const fullName = `${user.firstname} ${user.lastname}`.toLowerCase();
+            return user.email.toLowerCase().includes(lowercasedValue) || fullName.includes(lowercasedValue);
+        });
+    }, [users, filterValue]);
+
+    const handleFilter = (value: string) => {
+        setFilterValue(value);
+    };
 
     if (isLoading) return (
         <div className={styles['page_main-container']}>
@@ -23,7 +42,7 @@ export const UsersList: FC = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {isLoading && Array.from({ length: 25 }).map((_, index) => (
+                    {Array.from({ length: 25 }).map((_, index) => (
                         <TRowSceleton key={`${listId}-${index}`} rowLength={4} />
                     ))}
                 </tbody>
@@ -41,30 +60,20 @@ export const UsersList: FC = () => {
                 Упс.. Возникла проблема в соединении с сервером..
             </p>
         </div>
-    )
+    );
 
     return (
         <div className={styles['page_main-container']}>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Имя</th>
-                        <th>Фамилия</th>
-                        <th>Email</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {!isLoading && !error && users?.map((user) => (
-                        <tr key={`${listId}-${user.id}`}>
-                            <td>{user.id}</td>
-                            <td>{user.firstname}</td>
-                            <td>{user.lastname}</td>
-                            <td>{user.email}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+            <h1>Пользователи</h1>
+            <div style={{ display: 'flex', flexDirection: 'row', gap: '1rem', alignItems: 'center' }}>
+                <span>Фильтр:</span>
+                <Input 
+                    withDebounce={true} 
+                    onChange={handleFilter} 
+                    placeholder="Введите имя или email" 
+                />
+            </div>
+            <UsersTable data={filteredUsers} />
         </div>
     );
 };
